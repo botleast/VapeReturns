@@ -1198,53 +1198,6 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 					survival.toggle();
 				}
 			});
-new Module("CreativeMode", function(callback) {
-	if (callback && player) {
-		player.setGamemode(GameMode.fromId("creative"));
-	}
-});
-new Module("CreativeBypass", function(callback) {
-	if (callback) {
-		tickLoop["CreativeBypass"] = function() {
-			if (!player || !player.openContainer || player.openContainer != player.inventoryContainer) return;
-
-			const slots = player.inventoryContainer.inventorySlots;
-			for (let i = 0; i < slots.length; i++) {
-				const slot = slots[i];
-				if (slot && slot.getHasStack() && !slot.getStack().legitimized) {
-					const stack = slot.getStack();
-					stack.legitimized = true;
-
-					// Simulate moving the item to another slot and back to spoof legitimacy
-					playerControllerDump.windowClickDump(player.openContainer.windowId, i, 0, 0, player);
-					playerControllerDump.windowClickDump(player.openContainer.windowId, i, 0, 0, player);
-				}
-			}
-		}
-	} else {
-		delete tickLoop["CreativeBypass"];
-	}
-});
-new Module("ItemSpawner", function(callback) {
-	if (!callback || !player || !player.inventory) return;
-
-	const emberStone = new ItemStack(Items.flint_and_steel, 1);
-	const tntBlock = new ItemStack(Items.tnt, 64);
-
-	// Put items into first 2 hotbar slots if empty or override
-	player.inventory.main[0] = emberStone;
-	player.inventory.main[1] = tntBlock;
-
-	// Optional: try to legitimize with windowClickDump spoof
-	if (player.openContainer == player.inventoryContainer) {
-		playerControllerDump.windowClickDump(player.openContainer.windowId, 0, 0, 0, player);
-		playerControllerDump.windowClickDump(player.openContainer.windowId, 1, 0, 0, player);
-	}
-});
-
-
-
-
 			globalThis.${storeName}.modules = modules;
 			globalThis.${storeName}.profile = "default";
 		})();
