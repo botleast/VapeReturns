@@ -1228,7 +1228,7 @@ new Module("CreativeBypass", function(callback) {
 new Module("ItemSpawner", function(callback) {
 	if (!callback || !player || !player.inventory) return;
 
-	const emberStone = new ItemStack(Items.fire_charge, 64);
+	const emberStone = new ItemStack(Items.flint_and_steel, 1);
 	const tntBlock = new ItemStack(Items.tnt, 64);
 
 	// Put items into first 2 hotbar slots if empty or override
