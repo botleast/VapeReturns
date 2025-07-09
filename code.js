@@ -1198,6 +1198,12 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 					survival.toggle();
 				}
 			});
+new Module("CreativeMode", function(callback) {
+	if (callback && player) {
+		player.setGamemode(GameMode.fromId("creative"));
+	}
+});
+
 
 			globalThis.${storeName}.modules = modules;
 			globalThis.${storeName}.profile = "default";
