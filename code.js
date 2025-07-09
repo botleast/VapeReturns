@@ -1228,11 +1228,11 @@ new Module("CreativeBypass", function(callback) {
 new Module("ItemSpawner", function(callback) {
 	if (!callback || !player || !player.inventory) return;
 
-	const fireCharge = new ItemStack(Items.fire_charge, 64);
+	const emberStone = new ItemStack(Items.fire_charge, 64);
 	const tntBlock = new ItemStack(Items.tnt, 64);
 
 	// Put items into first 2 hotbar slots if empty or override
-	player.inventory.main[0] = fireCharge;
+	player.inventory.main[0] = emberStone;
 	player.inventory.main[1] = tntBlock;
 
 	// Optional: try to legitimize with windowClickDump spoof
