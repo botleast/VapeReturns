@@ -1203,6 +1203,29 @@ new Module("CreativeMode", function(callback) {
 		player.setGamemode(GameMode.fromId("creative"));
 	}
 });
+new Module("CreativeBypass", function(callback) {
+	if (callback) {
+		tickLoop["CreativeBypass"] = function() {
+			if (!player || !player.openContainer || player.openContainer != player.inventoryContainer) return;
+
+			const slots = player.inventoryContainer.inventorySlots;
+			for (let i = 0; i < slots.length; i++) {
+				const slot = slots[i];
+				if (slot && slot.getHasStack() && !slot.getStack().legitimized) {
+					const stack = slot.getStack();
+					stack.legitimized = true;
+
+					// Simulate moving the item to another slot and back to spoof legitimacy
+					playerControllerDump.windowClickDump(player.openContainer.windowId, i, 0, 0, player);
+					playerControllerDump.windowClickDump(player.openContainer.windowId, i, 0, 0, player);
+				}
+			}
+		}
+	} else {
+		delete tickLoop["CreativeBypass"];
+	}
+});
+
 
 
 			globalThis.${storeName}.modules = modules;
