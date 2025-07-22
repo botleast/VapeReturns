@@ -846,50 +846,53 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 			}
 
 			// Fly
-			let flyvalue, flyvert, flyEndMotion, flyMultiplier, flytimer, flytick, funny;
-			const fly = new Module("Fly", function(callback) {
-                reloadTickLoop(callback ? 50 / flytimer[1] : 50);
-				if (callback) {
-                    funny = false;
-					let ticks = 0;
-                    let flyticks = 0;
-                    let setticks = 0;
-					tickLoop["Fly"] = function() {
-						ticks++;
-                        if (!funny) {
-                            funny = player.motion.y <= 0 && !player.onGround;
-                            if (funny) {
-                              flyticks = flytick[1];
-                            }
-                        }
+let flyvalue, flyvert, flyEndMotion, flyMultiplier, flytimer, flytick, funny, flyautodisable;
+const fly = new Module("Fly", function(callback) {
+    reloadTickLoop(callback ? 50 / flytimer[1] : 50);
+    if (callback) {
+        funny = false;
+        let ticks = 0;
+        let flyticks = 0;
+        let setticks = 0;
+        tickLoop["Fly"] = function() {
+            ticks++;
+            if (!funny) {
+                funny = player.motion.y <= 0 && !player.onGround;
+                if (funny) {
+                    flyticks = flytick[1];
+                }
+            }
 
-                        if (flyticks > 0) {
-                            flyticks--;
-                            setticks = 3;
-                            const dir = getMoveDirection(flyticks <= 0 ? 0.26 : (flyvalue[1] * (ticks * flyMultiplier[1])));
-						    player.motion.x = dir.x;
-						    player.motion.z = dir.z;
-						    player.motion.y = flyticks >= 1 ? 0 : player.motion.y + flyEndMotion[1];
-                        }
+            if (flyticks > 0) {
+                flyticks--;
+                setticks = 3;
+                const dir = getMoveDirection(flyticks <= 0 ? 0.26 : (flyvalue[1] * (ticks * flyMultiplier[1])));
+                player.motion.x = dir.x;
+                player.motion.z = dir.z;
+                player.motion.y = flyticks >= 1 ? 0 : player.motion.y + flyEndMotion[1];
+            }
 
-                        if (setticks > 0) {
-                            setticks--;
-                            if (setticks <= 0) fly.toggle();
-                        }
-					};
-				} else {
-					delete tickLoop["Fly"];
-					if (player) {
-						player.motion.x = Math.max(Math.min(player.motion.x, 0.3), -0.3);
-						player.motion.z = Math.max(Math.min(player.motion.z, 0.3), -0.3);
-					}
-				}
-			});
-			flyMultiplier = fly.addoption("Multiplier", Number, 1.15);
-			flyEndMotion = fly.addoption("EndMotion", Number, 1.15);
-			flyvalue = fly.addoption("Speed", Number, 2);
-            flytimer = fly.addoption("Timer", Number, 0.5);
-            flytick = fly.addoption("Ticks", Number, 6);
+            // Optional auto-disable logic
+            if (setticks > 0 && flyautodisable[1]) {
+                setticks--;
+                if (setticks <= 0) fly.toggle();
+            }
+        };
+    } else {
+        delete tickLoop["Fly"];
+        if (player) {
+            player.motion.x = Math.max(Math.min(player.motion.x, 0.3), -0.3);
+            player.motion.z = Math.max(Math.min(player.motion.z, 0.3), -0.3);
+        }
+    }
+});
+flyMultiplier = fly.addoption("Multiplier", Number, 1.15);
+flyEndMotion = fly.addoption("EndMotion", Number, 1.15);
+flyvalue = fly.addoption("Speed", Number, 2);
+flytimer = fly.addoption("Timer", Number, 0.5);
+flytick = fly.addoption("Ticks", Number, 6);
+flyvert = fly.addoption("Vertical", Number, 0.7);
+flyautodisable = fly.addoption("AutoDisable", Boolean, false);
 			flyvert = fly.addoption("Vertical", Number, 0.7);
 
 			// InfiniteFly
@@ -1310,49 +1313,3 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		execute(publicUrl);
 	}
 })();
-
-// === Simple RightShift GUI ===
-let guiVisible = false;
-
-const guiDiv = document.createElement("div");
-Object.assign(guiDiv.style, {
-    position: "fixed",
-    top: "80px",
-    left: "80px",
-    backgroundColor: "rgba(20, 20, 20, 0.95)",
-    border: "1px solid #444",
-    padding: "10px",
-    zIndex: 9999,
-    fontFamily: "monospace",
-    fontSize: "14px",
-    color: "#fff",
-    maxHeight: "80vh",
-    overflowY: "auto",
-    borderRadius: "8px",
-    display: "none",
-});
-document.body.appendChild(guiDiv);
-
-function updateGui() {
-    guiDiv.innerHTML = "";
-    for (const [name, module] of Object.entries(modules)) {
-        const line = document.createElement("div");
-        line.style.cursor = "pointer";
-        line.style.margin = "4px 0";
-        line.style.color = module.enabled ? "#00ff00" : "#ff4f4f";
-        line.textContent = `[${module.enabled ? "✔" : "✖"}] ${name}`;
-        line.onclick = () => {
-            module.toggle();
-            updateGui();
-        };
-        guiDiv.appendChild(line);
-    }
-}
-
-window.addEventListener("keydown", function(e) {
-    if (e.code === "ShiftRight") {
-        guiVisible = !guiVisible;
-        guiDiv.style.display = guiVisible ? "block" : "none";
-        if (guiVisible) updateGui();
-    }
-});
