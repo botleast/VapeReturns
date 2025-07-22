@@ -1311,55 +1311,48 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 	}
 })();
 
-// === RightShift GUI (Fixed) ===
-(function waitForModules() {
-    const storeKey = Object.keys(globalThis).find(k => k.startsWith("a") && globalThis[k]?.modules);
-    if (!storeKey) return setTimeout(waitForModules, 100);
+// === Simple RightShift GUI ===
+let guiVisible = false;
 
-    const modules = globalThis[storeKey].modules;
+const guiDiv = document.createElement("div");
+Object.assign(guiDiv.style, {
+    position: "fixed",
+    top: "80px",
+    left: "80px",
+    backgroundColor: "rgba(20, 20, 20, 0.95)",
+    border: "1px solid #444",
+    padding: "10px",
+    zIndex: 9999,
+    fontFamily: "monospace",
+    fontSize: "14px",
+    color: "#fff",
+    maxHeight: "80vh",
+    overflowY: "auto",
+    borderRadius: "8px",
+    display: "none",
+});
+document.body.appendChild(guiDiv);
 
-    let guiVisible = false;
-
-    const guiDiv = document.createElement("div");
-    Object.assign(guiDiv.style, {
-        position: "fixed",
-        top: "80px",
-        left: "80px",
-        backgroundColor: "rgba(20, 20, 20, 0.95)",
-        border: "1px solid #444",
-        padding: "10px",
-        zIndex: 9999,
-        fontFamily: "monospace",
-        fontSize: "14px",
-        color: "#fff",
-        maxHeight: "80vh",
-        overflowY: "auto",
-        borderRadius: "8px",
-        display: "none",
-    });
-    document.body.appendChild(guiDiv);
-
-    function updateGui() {
-        guiDiv.innerHTML = "";
-        for (const [name, module] of Object.entries(modules)) {
-            const line = document.createElement("div");
-            line.style.cursor = "pointer";
-            line.style.margin = "4px 0";
-            line.style.color = module.enabled ? "#00ff00" : "#ff4f4f";
-            line.textContent = `[${module.enabled ? "✔" : "✖"}] ${name}`;
-            line.onclick = () => {
-                module.toggle();
-                updateGui();
-            };
-            guiDiv.appendChild(line);
-        }
+function updateGui() {
+    guiDiv.innerHTML = "";
+    for (const [name, module] of Object.entries(modules)) {
+        const line = document.createElement("div");
+        line.style.cursor = "pointer";
+        line.style.margin = "4px 0";
+        line.style.color = module.enabled ? "#00ff00" : "#ff4f4f";
+        line.textContent = `[${module.enabled ? "✔" : "✖"}] ${name}`;
+        line.onclick = () => {
+            module.toggle();
+            updateGui();
+        };
+        guiDiv.appendChild(line);
     }
+}
 
-    window.addEventListener("keydown", function(e) {
-        if (e.code === "ShiftRight") {
-            guiVisible = !guiVisible;
-            guiDiv.style.display = guiVisible ? "block" : "none";
-            if (guiVisible) updateGui();
-        }
-    });
-})();
+window.addEventListener("keydown", function(e) {
+    if (e.code === "ShiftRight") {
+        guiVisible = !guiVisible;
+        guiDiv.style.display = guiVisible ? "block" : "none";
+        if (guiVisible) updateGui();
+    }
+});
