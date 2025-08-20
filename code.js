@@ -343,10 +343,10 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 	addModification('setInterval(()=>this.fixedUpdate(),MSPT)', 'this.tickLoop=setInterval(()=>this.fixedUpdate(),MSPT)', true);
 
 	// PHASE
-	addModification('calculateXOffset(A,this.getEntityBoundingBox(),g.x)', 'enabledModules["Phase"] ? g.x : calculateXOffset(A,this.getEntityBoundingBox(),g.x)', true);
-	addModification('calculateYOffset(A,this.getEntityBoundingBox(),g.y)', 'enabledModules["Phase"] && !enabledModules["Scaffold"] && keyPressedDump("shift") ? g.y : calculateYOffset(A,this.getEntityBoundingBox(),g.y)', true);
-	addModification('calculateZOffset(A,this.getEntityBoundingBox(),g.z)', 'enabledModules["Phase"] ? g.z : calculateZOffset(A,this.getEntityBoundingBox(),g.z)', true);
-	addModification('pushOutOfBlocks(u,h,p){', 'if (enabledModules["Phase"]) return;');
+	//addModification('calculateXOffset(A,this.getEntityBoundingBox(),g.x)', 'enabledModules["Phase"] ? g.x : calculateXOffset(A,this.getEntityBoundingBox(),g.x)', true);
+	//addModification('calculateYOffset(A,this.getEntityBoundingBox(),g.y)', 'enabledModules["Phase"] && !enabledModules["Scaffold"] && keyPressedDump("shift") ? g.y : calculateYOffset(A,this.getEntityBoundingBox(),g.y)', true);
+	//addModification('calculateZOffset(A,this.getEntityBoundingBox(),g.z)', 'enabledModules["Phase"] ? g.z : calculateZOffset(A,this.getEntityBoundingBox(),g.z)', true);
+	//addModification('pushOutOfBlocks(u,h,p){', 'if (enabledModules["Phase"]) return;');
 
 	// AUTORESPAWN
 	addModification('this.game.info.showSignEditor=null,exitPointerLock())', `
@@ -643,37 +643,37 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 			velocityhori = velocity.addoption("Horizontal", Number, 0);
 			velocityvert = velocity.addoption("Vertical", Number, 0);
 
-			// NoFall
+			// NoFall (packet spoof fix – no rubberband)
 			new Module("NoFall", function(callback) {
-				if (callback) {
-					let ticks = 0;
-					tickLoop["NoFall"] = function() {
-        				const ray = rayTraceBlocks(player.getEyePos(), player.getEyePos().clone().setY(0), false, false, false, game.world);
-						if (player.fallDistance > 2.5 && ray) {
-							ClientSocket.sendPacket(new SPacketPlayerPosLook({pos: {x: player.pos.x, y: ray.hitVec.y, z: player.pos.z}, onGround: true}));
-							player.fallDistance = 0;
-						}
-					};
-				}
-				else delete tickLoop["NoFall"];
+    			if (callback) {
+        			tickLoop["NoFall"] = function() {
+            			if (player.fallDistance > 2.5) {
+                			// just spoof onGround, don't teleport
+                			ClientSocket.sendPacket(new SPacketPlayer({ onGround: true }));
+                			player.fallDistance = 0;
+            			}
+        			};
+    			} else delete tickLoop["NoFall"];
 			});
+
 
 			// WTap
 			new Module("WTap", function() {});
 
-			// AntiVoid
+			// AntiFall (safe void check without snapping back)
 			new Module("AntiFall", function(callback) {
-				if (callback) {
-					let ticks = 0;
-					tickLoop["AntiFall"] = function() {
-        				const ray = rayTraceBlocks(player.getEyePos(), player.getEyePos().clone().setY(0), false, false, false, game.world);
-						if (!ray) {
-							player.motion.y = 0;
-						}
-					};
-				}
-				else delete tickLoop["AntiFall"];
+    			if (callback) {
+        			tickLoop["AntiFall"] = function() {
+            			const ray = rayTraceBlocks(player.getEyePos(), player.getEyePos().clone().setY(0), false, false, false, game.world);
+            			if (!ray) {
+                			// instead of freezing motion (causes rubberband),
+                			// just send a fake ground packet
+                			ClientSocket.sendPacket(new SPacketPlayer({ onGround: true }));
+            			}
+        			};
+    			} else delete tickLoop["AntiFall"];
 			});
+
 
 			// Killaura
 			let attackDelay = Date.now();
@@ -846,53 +846,50 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 			}
 
 			// Fly
-let flyvalue, flyvert, flyEndMotion, flyMultiplier, flytimer, flytick, funny, flyautodisable;
-const fly = new Module("Fly", function(callback) {
-    reloadTickLoop(callback ? 50 / flytimer[1] : 50);
-    if (callback) {
-        funny = false;
-        let ticks = 0;
-        let flyticks = 0;
-        let setticks = 0;
-        tickLoop["Fly"] = function() {
-            ticks++;
-            if (!funny) {
-                funny = player.motion.y <= 0 && !player.onGround;
-                if (funny) {
-                    flyticks = flytick[1];
-                }
-            }
+			let flyvalue, flyvert, flyEndMotion, flyMultiplier, flytimer, flytick, funny;
+			const fly = new Module("Fly", function(callback) {
+                reloadTickLoop(callback ? 50 / flytimer[1] : 50);
+				if (callback) {
+                    funny = false;
+					let ticks = 0;
+                    let flyticks = 0;
+                    let setticks = 0;
+					tickLoop["Fly"] = function() {
+						ticks++;
+                        if (!funny) {
+                            funny = player.motion.y <= 0 && !player.onGround;
+                            if (funny) {
+                              flyticks = flytick[1];
+                            }
+                        }
 
-            if (flyticks > 0) {
-                flyticks--;
-                setticks = 3;
-                const dir = getMoveDirection(flyticks <= 0 ? 0.26 : (flyvalue[1] * (ticks * flyMultiplier[1])));
-                player.motion.x = dir.x;
-                player.motion.z = dir.z;
-                player.motion.y = flyticks >= 1 ? 0 : player.motion.y + flyEndMotion[1];
-            }
+                        if (flyticks > 0) {
+                            flyticks--;
+                            setticks = 3;
+                            const dir = getMoveDirection(flyticks <= 0 ? 0.26 : (flyvalue[1] * (ticks * flyMultiplier[1])));
+						    player.motion.x = dir.x;
+						    player.motion.z = dir.z;
+						    player.motion.y = flyticks >= 1 ? 0 : player.motion.y + flyEndMotion[1];
+                        }
 
-            // Optional auto-disable logic
-            if (setticks > 0 && flyautodisable[1]) {
-                setticks--;
-                if (setticks <= 0) fly.toggle();
-            }
-        };
-    } else {
-        delete tickLoop["Fly"];
-        if (player) {
-            player.motion.x = Math.max(Math.min(player.motion.x, 0.3), -0.3);
-            player.motion.z = Math.max(Math.min(player.motion.z, 0.3), -0.3);
-        }
-    }
-});
-flyMultiplier = fly.addoption("Multiplier", Number, 1.15);
-flyEndMotion = fly.addoption("EndMotion", Number, 1.15);
-flyvalue = fly.addoption("Speed", Number, 2);
-flytimer = fly.addoption("Timer", Number, 0.5);
-flytick = fly.addoption("Ticks", Number, 6);
-flyvert = fly.addoption("Vertical", Number, 0.7);
-flyautodisable = fly.addoption("AutoDisable", Boolean, false);
+                        if (setticks > 0) {
+                            setticks--;
+                            if (setticks <= 0) fly.toggle();
+                        }
+					};
+				} else {
+					delete tickLoop["Fly"];
+					if (player) {
+						player.motion.x = Math.max(Math.min(player.motion.x, 0.3), -0.3);
+						player.motion.z = Math.max(Math.min(player.motion.z, 0.3), -0.3);
+					}
+				}
+			});
+			flyMultiplier = fly.addoption("Multiplier", Number, 1.15);
+			flyEndMotion = fly.addoption("EndMotion", Number, 1.15);
+			flyvalue = fly.addoption("Speed", Number, 2);
+            flytimer = fly.addoption("Timer", Number, 0.5);
+            flytick = fly.addoption("Ticks", Number, 6);
 			flyvert = fly.addoption("Vertical", Number, 0.7);
 
 			// InfiniteFly
@@ -1184,7 +1181,23 @@ flyautodisable = fly.addoption("AutoDisable", Boolean, false);
 				reloadTickLoop(callback ? 50 / timervalue[1] : 50);
 			});
 			timervalue = timer.addoption("Value", Number, 1.2);
-			new Module("Phase", function() {});
+			new Module("Phase", function(callback) {
+    			if (callback) {
+        			tickLoop["Phase"] = function() {
+            			if (keyPressedDump("shift")) {
+                			const move = controls.getMovementVec().scale(0.3); // adjust speed
+                			ClientSocket.sendPacket(new SPacketPlayerPosLook({
+                    			pos: { 
+                        			x: player.pos.x + move.x, 
+                        			y: player.pos.y, 
+                        			z: player.pos.z + move.z 
+                    			},
+                    			onGround: true
+                			}));
+            			}
+        			};
+    			} else delete tickLoop["Phase"];
+			});
 
 			const antiban = new Module("AntiBan", function() {});
 			antiban.toggle();
@@ -1201,6 +1214,7 @@ flyautodisable = fly.addoption("AutoDisable", Boolean, false);
 					survival.toggle();
 				}
 			});
+
 			globalThis.${storeName}.modules = modules;
 			globalThis.${storeName}.profile = "default";
 		})();
