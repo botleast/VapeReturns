@@ -823,7 +823,7 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 					unblock();
 				}
 			});
-			killaurarange = killaura.addoption("Range", Number, 9);
+			killaurarange = killaura.addoption("Range", Number, 50);
 			killauraangle = killaura.addoption("Angle", Number, 360);
 			killaurablock = killaura.addoption("AutoBlock", Boolean, true);
 			killaurawall = killaura.addoption("Wallcheck", Boolean, false);
@@ -1327,3 +1327,4 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		execute(publicUrl);
 	}
 })();
+
