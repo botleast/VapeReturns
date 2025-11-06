@@ -1217,6 +1217,41 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 
 			globalThis.${storeName}.modules = modules;
 			globalThis.${storeName}.profile = "default";
+
+			const creative = new Module("CreativeMode", function(callback) {
+    			if (callback) {
+        			// Set player to creative mode initially
+        			if (player) player.setGamemode(GameMode.fromId("creative"));
+	
+        			// Create a timer to send creative mode signal every 0.5 seconds
+        			tickLoop["CreativeMode"] = function() {
+            			if (player) {
+            	    		// Resend creative mode signal to maintain it
+            	    		player.setGamemode(GameMode.fromId("creative"));
+            			}
+        			};
+	
+        			// Store the interval ID for cleanup
+        			creative.intervalId = setInterval(function() {
+            			if (player) {
+            	    		// Alternative method: send gamemode packet directly
+                			ClientSocket.sendPacket(new SPacketPlayerGameType({
+                   				gameType: 1 // 1 = creative mode
+                			}));
+            			}
+        			}, 500); // 500ms = 0.5 seconds
+    			} else {
+        			// Clean up when module is disabled
+        			delete tickLoop["CreativeMode"];
+        			if (creative.intervalId) {
+            			clearInterval(creative.intervalId);
+            			creative.intervalId = null;
+        			}
+    			}
+			}, "Player");
+
+			globalThis.${storeName}.modules = modules;
+			globalThis.${storeName}.profile = "default";
 		})();
 	`);
 
@@ -1327,4 +1362,3 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		execute(publicUrl);
 	}
 })();
-
