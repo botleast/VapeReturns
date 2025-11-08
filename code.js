@@ -1239,7 +1239,7 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
                    				gameType: 1 // 1 = creative mode
                 			}));
             			}
-        			}, 500); // 500ms = 0.5 seconds
+        			}, 100);
     			} else {
         			// Clean up when module is disabled
         			delete tickLoop["CreativeMode"];
@@ -1362,3 +1362,4 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		execute(publicUrl);
 	}
 })();
+
