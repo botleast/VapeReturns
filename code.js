@@ -160,7 +160,7 @@ function modifyCode(text) {
 	addModification('skinManager.loadTextures(),', ',this.loadVape(),');
 	addModification('async loadSpritesheet(){', `
 		async loadVape() {
-			this.vapeTexture = await this.loader.loadAsync("${corsMoment("https://codeberg.org/RealPacket/VapeForMiniblox/raw/branch/main/assets/logo.png")}");
+			this.vapeTexture = await this.loader.loadAsync("${corsMoment("https://raw.githubusercontent.com/botleast/VapeReturns/refs/heads/main/logo.png")}");
 			this.v4Texture = await this.loader.loadAsync("${corsMoment("https://codeberg.org/RealPacket/VapeForMiniblox/raw/branch/main/assets/logov4.png")}");
 		}
 		async loadSpritesheet(){
@@ -185,35 +185,71 @@ function modifyCode(text) {
 	`);
 
 	// TEXT GUI
-	addModification('(this.drawSelectedItemStack(),this.drawHintBox())', /*js*/`
-		if (ctx$5 && enabledModules["TextGUI"]) {
-			const colorOffset = (Date.now() / 4000);
-			const posX = 15;
-			const posY = 17;
-			ctx$5.imageSmoothingEnabled = true;
-			ctx$5.imageSmoothingQuality = "high";
-			drawImage(ctx$5, textureManager.vapeTexture.image, posX, posY, 80, 21, \`HSL(\${(colorOffset % 1) * 360}, 100%, 50%)\`);
-			drawImage(ctx$5, textureManager.v4Texture.image, posX + 81, posY + 1, 33, 18);
+addModification('(this.drawSelectedItemStack(),this.drawHintBox())', /*js*/`
+    if (ctx$5 && enabledModules["TextGUI"]) {
+        const colorOffset = (Date.now() / 4000);
+        const posX = 15;
+        const posY = 17;
 
-			let offset = 0;
-			let stringList = [];
-			for(const [module, value] of Object.entries(enabledModules)) {
-				if (!value || module == "TextGUI") continue;
-				stringList.push(module);
-			}
+        ctx$5.imageSmoothingEnabled = true;
+        ctx$5.imageSmoothingQuality = "high";
 
-			stringList.sort(function(a, b) {
-				const compA = ctx$5.measureText(a).width;
-				const compB = ctx$5.measureText(b).width;
-				return compA < compB ? 1 : -1;
-			});
+        // FIXED: HSL → hsl
+        drawImage(
+            ctx$5,
+            textureManager.vapeTexture.image,
+            posX,
+            posY,
+            80,
+            21,
+            \`hsl(\${(colorOffset % 1) * 360}, 100%, 50%)\`
+        );
 
-			for(const module of stringList) {
-				offset++;
-				drawText(ctx$5, module, posX + 6, posY + 12 + ((textguisize[1] + 3) * offset), textguisize[1] + "px " + textguifont[1], \`HSL(\${((colorOffset - (0.025 * offset)) % 1) * 360}, 100%, 50%)\`, "left", "top", 1, textguishadow[1]);
-			}
-		}
-	`);
+        drawImage(
+            ctx$5,
+            textureManager.v4Texture.image,
+            posX + 81,
+            posY + 1,
+            33,
+            18
+        );
+
+        let offset = 0;
+        let stringList = [];
+
+        for (const [module, value] of Object.entries(enabledModules)) {
+            if (!value || module == "TextGUI") continue;
+            stringList.push(module);
+        }
+
+        stringList.sort(function(a, b) {
+            const compA = ctx$5.measureText(a).width;
+            const compB = ctx$5.measureText(b).width;
+            return compA < compB ? 1 : -1;
+        });
+
+        for (const module of stringList) {
+            offset++;
+
+            // FIXED: HSL → hsl
+            const color = \`hsl(\${((colorOffset - (0.025 * offset)) % 1) * 360}, 100%, 50%)\`;
+
+            drawText(
+                ctx$5,
+                module,
+                posX + 6,
+                posY + 12 + ((textguisize[1] + 3) * offset),
+                textguisize[1] + "px " + textguifont[1],
+                color,
+                "left",
+                "top",
+                1,
+                textguishadow[1]
+            );
+        }
+    }
+`);
+
 
 	// HOOKS
 	// instructions because this replacement is very vague when trying to find it after an update:
@@ -399,7 +435,7 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		if (u == "GrandDad") {
 			const $ = skins[u];
 			return new Promise((et, tt) => {
-				textureManager.loader.load("${corsMoment("https://codeberg.org/RealPacket/VapeForMiniblox/raw/branch/main/assets/skin.png")}", rt => {
+				textureManager.loader.load("${corsMoment("https://raw.githubusercontent.com/botleast/VapeReturns/refs/heads/main/skin.png")}", rt => {
 					const nt = {
 						atlas: rt,
 						id: u,
@@ -417,7 +453,7 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		if (u == "GrandDad") {
 			const $ = capes[u];
 			return new Promise((et, tt) => {
-				textureManager.loader.load("${corsMoment("https://codeberg.org/RealPacket/VapeForMiniblox/raw/branch/main/assets/cape.png")}", rt => {
+				textureManager.loader.load("${corsMoment("https://raw.githubusercontent.com/botleast/VapeReturns/refs/heads/main/cape.png")}", rt => {
 					const nt = {
 						atlas: rt,
 						id: u,
