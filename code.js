@@ -4,7 +4,7 @@
 let replacements = {};
 let dumpedVarNames = {};
 const storeName = "a" + crypto.randomUUID().replaceAll("-", "").substring(16);
-const kapeName = crypto.randomUUID().replaceAll("-", "").substring(16);
+const vapeName = crypto.randomUUID().replaceAll("-", "").substring(16);
 const VERSION = "3.0.6";
 
 // ANTICHEAT HOOK
@@ -142,12 +142,12 @@ function modifyCode(text) {
 		});
 	`);
 
-	addModification('VERSION$1," | ",', `"${kapeName} v${VERSION}"," | ",`);
-	addModification('if(!x.canConnect){', 'x.errorMessage = x.errorMessage === "Could not join server. You are connected to a VPN or proxy. Please disconnect from it and refresh the page." ? "[kape] You\'re IP banned (these probably don\'t exist now anyways)" : x.errorMessage;');
+	addModification('VERSION$1," | ",', `"${vapeName} v${VERSION}"," | ",`);
+	addModification('if(!x.canConnect){', 'x.errorMessage = x.errorMessage === "Could not join server. You are connected to a VPN or proxy. Please disconnect from it and refresh the page." ? "[Vape] You\'re IP banned (these probably don\'t exist now anyways)" : x.errorMessage;');
 
 	// DRAWING SETUP
 	addModification('I(this,"glintTexture");', `
-		I(this, "kapeTexture");
+		I(this, "vapeTexture");
 		I(this, "v4Texture");
 	`);
 	/**
@@ -157,11 +157,11 @@ function modifyCode(text) {
 	const corsMoment = url => {
 		return new URL(`https://corsproxy.io/?url=${url}`).href;
 	}
-	addModification('skinManager.loadTextures(),', ',this.loadkape(),');
+	addModification('skinManager.loadTextures(),', ',this.loadVape(),');
 	addModification('async loadSpritesheet(){', `
-		async loadkape() {
-			this.kapeTexture = await this.loader.loadAsync("${corsMoment("")}");
-			this.k4Texture = await this.loader.loadAsync("${corsMoment("")}");
+		async loadVape() {
+			this.vapeTexture = await this.loader.loadAsync("${corsMoment("https://codeberg.org/RealPacket/VapeForMiniblox/raw/branch/main/assets/logo.png")}");
+			this.v4Texture = await this.loader.loadAsync("${corsMoment("https://codeberg.org/RealPacket/VapeForMiniblox/raw/branch/main/assets/logov4.png")}");
 		}
 		async loadSpritesheet(){
 	`, true);
@@ -192,7 +192,7 @@ function modifyCode(text) {
 			const posY = 17;
 			ctx$5.imageSmoothingEnabled = true;
 			ctx$5.imageSmoothingQuality = "high";
-			drawImage(ctx$5, textureManager.kapeTexture.image, posX, posY, 80, 21, \`HSL(\${(colorOffset % 1) * 360}, 100%, 50%)\`);
+			drawImage(ctx$5, textureManager.vapeTexture.image, posX, posY, 80, 21, \`HSL(\${(colorOffset % 1) * 360}, 100%, 50%)\`);
 			drawImage(ctx$5, textureManager.v4Texture.image, posX + 81, posY + 1, 33, 18);
 
 			let offset = 0;
@@ -399,7 +399,7 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		if (u == "GrandDad") {
 			const $ = skins[u];
 			return new Promise((et, tt) => {
-				textureManager.loader.load("${corsMoment("")}", rt => {
+				textureManager.loader.load("${corsMoment("https://codeberg.org/RealPacket/VapeForMiniblox/raw/branch/main/assets/skin.png")}", rt => {
 					const nt = {
 						atlas: rt,
 						id: u,
@@ -417,7 +417,7 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		if (u == "GrandDad") {
 			const $ = capes[u];
 			return new Promise((et, tt) => {
-				textureManager.loader.load("${corsMoment("")}", rt => {
+				textureManager.loader.load("${corsMoment("https://codeberg.org/RealPacket/VapeForMiniblox/raw/branch/main/assets/cape.png")}", rt => {
 					const nt = {
 						atlas: rt,
 						id: u,
@@ -536,20 +536,20 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 				if (args.length > 1) {
 					switch (args[1]) {
 						case "save":
-							globalThis.${storeName}.savekapeConfig(args[2]);
+							globalThis.${storeName}.saveVapeConfig(args[2]);
 							game.chat.addChat({text: "Saved config " + args[2]});
 							break;
 						case "load":
-							globalThis.${storeName}.savekapeConfig();
-							globalThis.${storeName}.loadkapeConfig(args[2]);
+							globalThis.${storeName}.saveVapeConfig();
+							globalThis.${storeName}.loadVapeConfig(args[2]);
 							game.chat.addChat({text: "Loaded config " + args[2]});
 							break;
 						case "import":
-							globalThis.${storeName}.importkapeConfig(args[2]);
+							globalThis.${storeName}.importVapeConfig(args[2]);
 							game.chat.addChat({text: "Imported config"});
 							break;
 						case "export":
-							globalThis.${storeName}.exportkapeConfig();
+							globalThis.${storeName}.exportVapeConfig();
 							game.chat.addChat({text: "Config set to clipboard!"});
 							break;
 					}
@@ -1205,7 +1205,7 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 			new Module("AutoQueue", function() {});
 			new Module("AutoVote", function() {});
 			const chatdisabler = new Module("ChatDisabler", function() {});
-			chatdisablermsg = chatdisabler.addoption("Message", String, "youtube.com/c/7GrandDadkape");
+			chatdisablermsg = chatdisabler.addoption("Message", String, "youtube.com/c/7GrandDadVape");
 			new Module("FilterBypass", function() {});
 
 			const survival = new Module("SurvivalMode", function(callback) {
@@ -1255,7 +1255,7 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		})();
 	`);
 
-	async function savekapeConfig(profile) {
+	async function saveVapeConfig(profile) {
 		if (!loadedConfig) return;
 		let saveList = {};
 		for(const [name, module] of Object.entries(unsafeWindow.globalThis[storeName].modules)) {
@@ -1264,15 +1264,15 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 				saveList[name].options[option] = setting[1];
 			}
 		}
-		GM_setValue("kapeConfig" + (profile ?? unsafeWindow.globalThis[storeName].profile), JSON.stringify(saveList));
-		GM_setValue("mainkapeConfig", JSON.stringify({profile: unsafeWindow.globalThis[storeName].profile}));
+		GM_setValue("vapeConfig" + (profile ?? unsafeWindow.globalThis[storeName].profile), JSON.stringify(saveList));
+		GM_setValue("mainVapeConfig", JSON.stringify({profile: unsafeWindow.globalThis[storeName].profile}));
 	};
 
-	async function loadkapeConfig(switched) {
+	async function loadVapeConfig(switched) {
 		loadedConfig = false;
-		const loadedMain = JSON.parse(await GM_getValue("mainkapeConfig", "{}")) ?? {profile: "default"};
+		const loadedMain = JSON.parse(await GM_getValue("mainVapeConfig", "{}")) ?? {profile: "default"};
 		unsafeWindow.globalThis[storeName].profile = switched ?? loadedMain.profile;
-		const loaded = JSON.parse(await GM_getValue("kapeConfig" + unsafeWindow.globalThis[storeName].profile, "{}"));
+		const loaded = JSON.parse(await GM_getValue("vapeConfig" + unsafeWindow.globalThis[storeName].profile, "{}"));
 		if (!loaded) {
 			loadedConfig = true;
 			return;
@@ -1294,15 +1294,15 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		loadedConfig = true;
 	};
 
-	async function exportkapeConfig() {
-		navigator.clipboard.writeText(await GM_getValue("kapeConfig" + unsafeWindow.globalThis[storeName].profile, "{}"));
+	async function exportVapeConfig() {
+		navigator.clipboard.writeText(await GM_getValue("vapeConfig" + unsafeWindow.globalThis[storeName].profile, "{}"));
 	};
 
-	async function importkapeConfig() {
+	async function importVapeConfig() {
 		const arg = await navigator.clipboard.readText();
 		if (!arg) return;
-		GM_setValue("kapeConfig" + unsafeWindow.globalThis[storeName].profile, arg);
-		loadkapeConfig();
+		GM_setValue("vapeConfig" + unsafeWindow.globalThis[storeName].profile, arg);
+		loadVapeConfig();
 	};
 
 	let loadedConfig = false;
@@ -1319,13 +1319,13 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 				}
 			}, 10);
 		});
-		unsafeWindow.globalThis[storeName].savekapeConfig = savekapeConfig;
-		unsafeWindow.globalThis[storeName].loadkapeConfig = loadkapeConfig;
-		unsafeWindow.globalThis[storeName].exportkapeConfig = exportkapeConfig;
-		unsafeWindow.globalThis[storeName].importkapeConfig = importkapeConfig;
-		loadkapeConfig();
+		unsafeWindow.globalThis[storeName].saveVapeConfig = saveVapeConfig;
+		unsafeWindow.globalThis[storeName].loadVapeConfig = loadVapeConfig;
+		unsafeWindow.globalThis[storeName].exportVapeConfig = exportVapeConfig;
+		unsafeWindow.globalThis[storeName].importVapeConfig = importVapeConfig;
+		loadVapeConfig();
 		setInterval(async function() {
-			savekapeConfig();
+			saveVapeConfig();
 		}, 10000);
 	}
 
