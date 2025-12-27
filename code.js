@@ -1287,44 +1287,60 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 			}, "Player");
 
             const chatTranslator = new Module("ChatTranslator", function (callback) {
-                if (callback) {
-                    chatTranslator.cache = {};
-                    chatTranslator.listener = function (h) {
-                        try {
-                            if (!h || !h.text || typeof h.text !== "string") return;
-                            if (h.text.startsWith("[")) return;
-                            if (player && h.text.startsWith(player.name)) return;
-                            const original = h.text;
-                            if (chatTranslator.cache[original]) {
-                                h.text = chatTranslator.cache[original];
-                                return;
-                            }
-                            fetch(
-                                "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=" +
-                                encodeURIComponent(original)
-                            )
-                            .then(r => r.json())
-                            .then(d => {
-                                const translated =
-                                    "[" + d[2] + "] " +
-                                    d[0].map(x => x[0]).join("");
+    if (callback) {
+        chatTranslator.cache = {};
 
-                                chatTranslator.cache[original] = translated;
-                                h.text = translated;
-                            });
-                        } catch (e) {
-                            console.warn("ChatTranslator error:", e);
-                        }
-                    };
-                    ClientSocket.on("CPacketMessage", chatTranslator.listener);
-                } else {
-                    if (chatTranslator.listener) {
-                        ClientSocket.off("CPacketMessage", chatTranslator.listener);
-                        chatTranslator.listener = null;
-                    }
-                    chatTranslator.cache = {};
+        chatTranslator.listener = function (h) {
+            try {
+                if (!h || typeof h.text !== "string") return;
+
+                // Skip own & system messages
+                if (player && h.text.startsWith(player.name)) return;
+                if (h.text.startsWith("[")) return;
+
+                const original = h.text;
+
+                // Replace immediately (IMPORTANT)
+                h.text = "[..] translating";
+
+                // Cached?
+                if (chatTranslator.cache[original]) {
+                    h.text = chatTranslator.cache[original];
+                    return;
                 }
-            }, "Chat");
+
+                fetch(
+                    "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=en&dt=t&q=" +
+                    encodeURIComponent(original)
+                )
+                .then(r => r.json())
+                .then(d => {
+                    const translated =
+                        "[" + d[2] + "] " +
+                        d[0].map(x => x[0]).join("");
+
+                    chatTranslator.cache[original] = translated;
+
+                    // Update rendered chat entry
+                    h.text = translated;
+                });
+
+            } catch (e) {
+                console.warn("ChatTranslator error:", e);
+            }
+        };
+
+        ClientSocket.on("CPacketMessage", chatTranslator.listener);
+
+    } else {
+        if (chatTranslator.listener) {
+            ClientSocket.off("CPacketMessage", chatTranslator.listener);
+            chatTranslator.listener = null;
+        }
+        chatTranslator.cache = {};
+    }
+}, "Chat");
+
 
 			globalThis.${storeName}.modules = modules;
 			globalThis.${storeName}.profile = "default";
@@ -1438,3 +1454,4 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 		execute(publicUrl);
 	}
 })();
+
