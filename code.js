@@ -641,50 +641,45 @@ h.addVelocity(-Math.sin(this.yaw) * g * .5, .1, -Math.cos(this.yaw) * g * .5);
 	addModification('S&&!this.isUsingItem()', 'S&&!(this.isUsingItem() && !enabledModules["NoSlowdown"])', true);
 
 	// DESYNC
-	addModification("this.inputSequenceNumber++","if(!desync)this.inputSequenceNumber++",true);
+	addModification(
+  "this.inputSequenceNumber++",
+  "if(!desync)this.inputSequenceNumber++",
+  true
+);
 	// addModification("new PBVector3({x:this.pos.x,y:this.pos.y,z:this.pos.z})", "desync ? inputPos : inputPos = this.pos", true);
 
 	// auto-reset the desync variable
-	addModification("reconcileServerPosition(h){","this.serverPos = h;",false);
+	addModification(
+  "reconcileServerPosition(h){",
+  "this.serverPos = h;",
+  false
+);
 
-	addModification("new SPacketPlayerInput({",`
-		if (desync) {
-		  if (!this.serverPos) this.serverPos = this.local.pos;
-
-		  this.local.pos = desyncMath(
-		    this.local.pos,
-		    this.serverPos,
-		    1.9999977
-		  );
-		}
-		new SPacketPlayerInput({
-		`,
-		  true
-	);
+	addModification(
+  "new SPacketPlayerInput({",
+  `desync && (this.local.pos = desyncMath(this.local.pos, this.serverPos || this.local.pos, 1.9999977)), new SPacketPlayerInput({`,
+  true
+);
 
 	// PREDICTION AC FIXER (makes the ac a bit less annoying (e.g. when scaffolding))
 	// ig but this should be done in the desync branch instead - bab
 	addModification(
-		  "if(h.reset){this.setPosition(h.x,h.y,h.z),this.reset();return}",
-		  `
-		if (h.reset) {
-		  const dx = this.pos.x - h.x;
-		  const dy = this.pos.y - h.y;
-		  const dz = this.pos.z - h.z;
+  "if(h.reset){this.setPosition(h.x,h.y,h.z),this.reset();return}",
+  `
+if(h.reset){
+  const dx=this.pos.x-h.x,dy=this.pos.y-h.y,dz=this.pos.z-h.z;
+  const dist=Math.sqrt(dx*dx+dy*dy+dz*dz);
 
-		  const dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
-
-		  if (!desync || dist > 4) {
-		    this.setPosition(h.x, h.y, h.z);
-		    this.reset();
-		    return;
-		  }
-
-		  return; // ignore small corrections
-		}
-		`,
-		  true
-	);
+  if(!desync||dist>4){
+    this.setPosition(h.x,h.y,h.z);
+    this.reset();
+    return;
+  }
+  return;
+}
+`,
+  true
+);
 
 	// STEP
 	addModification('p.y=this.stepHeight;', 'p.y=(enabledModules["Step"]?Math.max(stepheight[1],this.stepHeight):this.stepHeight);', true);
